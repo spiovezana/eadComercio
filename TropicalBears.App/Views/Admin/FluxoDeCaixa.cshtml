@@ -1,0 +1,199 @@
+﻿@using TropicalBears.Model.DataBase;
+@using TropicalBears.Model.DataBase.Model;
+@model IEnumerable<TropicalBears.Model.DataBase.Model.Estoque>
+
+@{
+    ViewBag.Title = "FluxoDeCaixa";
+    var fluxo = DbConfig.Instance.FluxoCaixaRepository.FirstOrDefault();
+    if (fluxo == null)
+    {
+        using (Html.BeginForm("FluxoCaixaSalvar", "Admin", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+
+            <h2>Fluxo de Caixa</h2>
+            <table class="table">
+                <tr>
+                    <h4>Entradas</h4>
+                </tr>
+                <tr>
+                    <th>Contas a Receber</th>
+                    <th>Empréstimos</th>
+                    <th>Dinheiro Sócios</th>
+                </tr>
+                <tr>
+                    <td><input class="form-control" type="number" id="contasReceber" name="contasReceber" /> </td>
+                    <td><input class="form-control" type="number" id="emprestimos" name="emprestimos" /></td>
+                    <td><input class="form-control" type="number" id="dinheiroSocios" name="dinheiroSocios" /></td>
+                </tr>
+                <tr>
+                    <th>Contas a Pagar</th>
+                    <th>Despesas Gerais</th>
+                    <th>Pagamento Empréstimos</th>
+                    <th>Compras à Vista</th>
+                </tr>
+                <tr>
+                    <td><input class="form-control" type="number" id="contasPagar" name="contasPagar" /> </td>
+                    <td><input class="form-control" type="number" id="despesasGerais" name="despesasGerais" /> </td>
+                    <td><input class="form-control" type="number" id="pagamentoEmprestimos" name="pagamentoEmprestimos" /></td>
+                    <td><input class="form-control" type="number" id="comprasVista" name="comprasVista" /></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><input type="submit" value="Salvar" class="btn btn-success" /></td>
+                </tr>
+            </table>
+
+        }
+    }
+    else {
+        using (Html.BeginForm("FluxoCaixaAtt", "Admin", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+
+            <h2>Fluxo de Caixa</h2>
+            <table class="table">
+                <tr>
+                    <h4>Entradas</h4>
+                </tr>
+                <tr>
+                    <th>Contas a Receber</th>
+                    <th>Empréstimos</th>
+                    <th>Dinheiro Sócios</th>
+                    <th>Total Entrada</th>
+                </tr>
+                <tr>
+                    <td><input class="form-control" type="number" id="contasReceber" name="contasReceber" value="@fluxo.ContasReceber"/> </td>
+                    <td><input class="form-control" type="number" id="emprestimos" name="emprestimos" value="@fluxo.Emprestimos"/></td>
+                    <td><input class="form-control" type="number" id="dinheiroSocios" name="dinheiroSocios" value="@fluxo.DinheiroSocios"/></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <th>Contas a Pagar</th>
+                    <th>Despesas Gerais</th>
+                    <th>Pagamento Empréstimos</th>
+                    <th>Compras à Vista</th>
+                    <th>Total Saída</th>
+                </tr>
+                <tr>
+                    <td><input class="form-control" type="number" id="contasPagar" name="contasPagar" value="@fluxo.ContasPagar"/> </td>
+                    <td><input class="form-control" type="number" id="despesasGerais" name="despesasGerais" value="@fluxo.DespesasGerais"/> </td>
+                    <td><input class="form-control" type="number" id="pagamentoEmprestimos" name="pagamentoEmprestimos" value="@fluxo.PagamentoEmprestimos"/></td>
+                    <td><input class="form-control" type="number" id="comprasVista" name="comprasVista" value="@fluxo.ComprasVista"/></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><input type="submit" value="Salvar" class="btn btn-success" /></td>
+                </tr>
+            </table>
+
+             }
+    } 
+}
+
+
+<br /><br /><br /><br />
+<h2>Relatório de Estoque Anual</h2>
+
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayName("Produto")
+        </th>
+        <th>
+            @Html.DisplayName("Total Vendidos")
+        </th>
+        <th>
+            @Html.DisplayName("Preço Total Compra")
+        </th>
+        <th>
+            @Html.DisplayName("Preço Total Vendas")
+        </th>
+        <th>
+            @Html.DisplayName("Lucro")
+        </th>
+    </tr>
+
+    @{
+
+        var vendas = DbConfig.Instance.ItemVendaRepository.FindAll();
+        var itenstotal = 0;
+        var compratotal = 0.0;
+        var vendatotal = 0.0;
+        var lucrototal = 0.0;
+    }
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Produto.Nome)
+            </td>
+            <td>
+                @{
+                    var qnt = 0;
+
+                    foreach (var v in vendas)
+                    {
+                        if (v.Produto.Id == item.Produto.Id)
+                        {
+                            qnt += v.Quantidade;
+                            itenstotal += qnt;
+                        }
+                    }
+                }
+                @Html.Raw(qnt.ToString())
+            </td>
+            <td>
+                R$@Html.DisplayFor(modelItem => item.PrecoCusto)
+                @{
+                    compratotal += item.PrecoCusto;
+                }
+            </td>
+            <td>
+                @{
+                    double venda = 0;
+
+                    foreach (var v in vendas)
+                    {
+                        if (v.Produto.Id == item.Produto.Id)
+                        {
+                            venda += v.Venda.ValorTotal;
+                            vendatotal += venda;
+                        }
+                    }
+                }
+                R$@Html.Raw(venda.ToString())
+            </td>
+            <td>
+                @{
+                    var lucro = venda - item.PrecoCusto;
+                    lucrototal += lucro;
+
+                }
+                R$@Html.Raw(lucro.ToString())
+            </td>
+        </tr>
+    }
+
+    <tr>
+        <th>Total</th>
+        <th>@Html.Raw(itenstotal.ToString())</th>
+        <th>R$@Html.Raw(compratotal.ToString())</th>
+        <th>R$@Html.Raw(vendatotal.ToString())</th>
+        <th>R$@Html.Raw(lucrototal.ToString())</th>
+    </tr>
+    <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><button class="btn btn-lg btn-primary"> <span class="glyphicon glyphicon-download"></span> Salvar</button></td>
+    </tr>
+</table>
